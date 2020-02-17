@@ -16,32 +16,46 @@ int main (int argc, char **argv)
     std::cout << "Welcome to OSShell! Please enter your commands ('exit' to quit)." << std::endl;
 //Load in history
 
-
-
+    //Keep last 128 items from file as history
+    //    std::string[] history = new std::string[128];//This doesn't work
+    bool* executable;
+    *executable = false;
+    bool exit_flag = false;
+    std::string full_path = "";
     // Repeat:
     //  Print prompt for user input: "osshell> " (no newline)
-y
+    while(!(exit_flag))
+    {
+      std::cout << "osshell>";
 
     //  Get user input for next command
+      std::cin >> input;
+
+      // If just \n next
+
+      //  If command is `exit` exit loop / quit program
 
 
-    //  If command is `exit` exit loop / quit program
+      //  If command is `history` print previous N commands
 
+      //Additional options for history here.
 
-    //  If command is `history` print previous N commands
-
-//Additional options
+      
 
     //  For all other commands, check if an executable by that name is in one of the PATH directories
 
 //getFullPath();
-//fileExists();
-
-    //   If yes, execute it
-
-
-    //   If no, print error statement: "<command_name>: Error running command" (do include newline)
-
+      if(fileExists(full_path, executable))
+      {
+	//   If yes, execute it
+      }
+      else
+      {
+	std::cout<<"<Command_name>: Error running command"<<std::endl;
+	//   If no, print error statement: "<command_name>: Error running command" (do include newline)
+      }
+      exit_flag = true;
+    }//while exit_flag
     return 0;
 }
 
