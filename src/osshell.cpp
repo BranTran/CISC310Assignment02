@@ -12,8 +12,15 @@ int main (int argc, char **argv)
 	//hello comment added
     std::string input;
     char* os_path = getenv("PATH");
+    std::cout << os_path;
     std::vector<std::string> os_path_list = splitString(os_path, ':');
+    std::vector<std::string>::iterator path_it = os_path_list.begin();
 
+    for(path_it = os_path_list.begin(); path_it != os_path_list.end(); path_it++){
+      std::cout << *path_it << std::endl;
+    }
+    std::cout << std::endl;
+    
     std::cout << "Welcome to OSShell! Please enter your commands ('exit' to quit)." << std::endl;
 //Load in history
     /*
@@ -83,16 +90,19 @@ int main (int argc, char **argv)
 std::vector<std::string> splitString(std::string text, char d)
 {
 //NEED TO CODE
-    std::vector<std::string> result;
-    /*
-      while(not at end of string)
-        if character is "d"
-           end string
-     	   put in vector push_back()
-	   reset string
-        else
-           push character into input string
-     */
+  std::string::iterator it;
+  std::string path;
+  std::vector<std::string> result;
+  for(it = text.begin(); it != text.end(); it++){
+    if(*it == d){
+      //      std::cout << "Compared it:" <<*it<<" and found match"<<std::endl;
+      result.push_back(path);
+      path.clear();
+    }
+    else{
+      path.push_back(*it);
+    }
+  }
     return result;
 }
 
