@@ -9,6 +9,7 @@ bool fileExists(std::string full_path, bool *executable);
 
 int main (int argc, char **argv)
 {
+	//hello comment added
     std::string input;
     char* os_path = getenv("PATH");
     std::vector<std::string> os_path_list = splitString(os_path, ':');
