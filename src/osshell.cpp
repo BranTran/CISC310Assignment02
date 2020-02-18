@@ -15,13 +15,17 @@ int main (int argc, char **argv)
 
     std::cout << "Welcome to OSShell! Please enter your commands ('exit' to quit)." << std::endl;
 //Load in history
+    /*
+      vector of history
+      open file (figure out where to put file. Probably bin/)
+      read file and store the LAST 128 (if applicable) into vector
+      
+     */
 
-    //Keep last 128 items from file as history
-    //    std::string[] history = new std::string[128];//This doesn't work
-    bool* executable;
-    *executable = false;
+    //    bool* executable;
+    //*executable = false;
     bool exit_flag = false;
-    std::string full_path = "";
+    //    std::string full_path ("");
     // Repeat:
     //  Print prompt for user input: "osshell> " (no newline)
     while(!(exit_flag))
@@ -33,21 +37,36 @@ int main (int argc, char **argv)
 
       // If just \n next
 
-      //  If command is `exit` exit loop / quit program
-
+      //  else If command is `exit` exit loop / quit program
+      /*
+	Add exit to history
+	exit_flag = true;
+       */
 
       //  If command is `history` print previous N commands
 
-      //Additional options for history here.
-
+      /*
+	Check if additional arguments apply
+	then play with history vector
+	add history into history
+       */
       
 
     //  For all other commands, check if an executable by that name is in one of the PATH directories
 
-//getFullPath();
-      if(fileExists(full_path, executable))
+      //For each thing in path vector
+      //
+      //getFullPath(cmd, path);
+      //
+      //QUESTION: WHat is executable???
+      
+      //if(fileExists(full_path, executable))
+      if(1==0)
       {
 	//   If yes, execute it
+	// fork
+	//output = execv()
+	//std::cout < output <std::endl;
       }
       else
       {
@@ -64,7 +83,15 @@ std::vector<std::string> splitString(std::string text, char d)
 {
 //NEED TO CODE
     std::vector<std::string> result;
-
+    /*
+      while(not at end of string)
+        if character is "d"
+           end string
+     	   put in vector push_back()
+	   reset string
+        else
+           push character into input string
+     */
     return result;
 }
 
