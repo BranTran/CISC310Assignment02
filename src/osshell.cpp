@@ -2,7 +2,8 @@
 #include <cstdlib>
 #include <string>
 #include <vector>
- 
+#include <sys/stat.h>
+
 std::vector<std::string> splitString(std::string text, char d);
 std::string getFullPath(std::string cmd, const std::vector<std::string>& os_path_list);
 bool fileExists(std::string full_path, bool *executable);
@@ -121,9 +122,10 @@ std::string getFullPath(std::string cmd, const std::vector<std::string>& os_path
   std::vector<std::string>::const_iterator path_it = os_path_list.begin();
   for(path_it = os_path_list.begin(); path_it != os_path_list.end() && !found; path_it++){
     path = *path_it + '/' + cmd;
-    std::cout << path << std::endl;
+    //    std::cout << path << std::endl;
     found = fileExists(path,&executable);
     if(found && executable){
+      std::cout << path << std::endl;
       return path;
     }
   }
@@ -135,12 +137,17 @@ std::string getFullPath(std::string cmd, const std::vector<std::string>& os_path
 // depending on if the user has permission to execute the file
 bool fileExists(std::string full_path, bool *executable)
 {
-  if(1==0){
+  struct stat st;
+  if(stat(file, &st) < 0){
+    *executable = false;
+    return false;
+
+  }
+  if((st.st_mode & S_IEXEC) != 0){
     *executable = true;
     return true;
   }
-  else{
-    *executable = false;
-    return false;
-  }
+  *executable = false;
+  return false;
+
 }
