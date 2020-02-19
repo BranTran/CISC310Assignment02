@@ -12,14 +12,16 @@ int main (int argc, char **argv)
 	//hello comment added
     std::string input;
     char* os_path = getenv("PATH");
-    std::cout << os_path;
-    std::vector<std::string> os_path_list = splitString(os_path, ':');
-    std::vector<std::string>::iterator path_it = os_path_list.begin();
 
-    for(path_it = os_path_list.begin(); path_it != os_path_list.end(); path_it++){
-      std::cout << *path_it << std::endl;
-    }
-    std::cout << std::endl;
+    //std::cout << os_path;//Print path variable
+    std::vector<std::string> os_path_list = splitString(os_path, ':');//split path
+
+    //--Displays pared PATH list
+    //std::vector<std::string>::iterator path_it = os_path_list.begin();
+    //    for(path_it = os_path_list.begin(); path_it != os_path_list.end(); path_it++){
+    //  std::cout << *path_it << std::endl;
+    //}
+    //std::cout << std::endl;
     
     std::cout << "Welcome to OSShell! Please enter your commands ('exit' to quit)." << std::endl;
 //Load in history
@@ -43,6 +45,9 @@ int main (int argc, char **argv)
     //  Get user input for next command
       std::cin >> input;
 
+      //NEED TO PROCESS commandline to command and argument
+      
+
       // If just \n next
 
       //  else If command is `exit` exit loop / quit program
@@ -64,7 +69,7 @@ int main (int argc, char **argv)
 
       //For each thing in path vector
       //
-      //getFullPath(cmd, path);
+      getFullPath(input, os_path_list);
       //
       //QUESTION: WHat is executable???
       
@@ -74,6 +79,7 @@ int main (int argc, char **argv)
 	//   If yes, execute it
 	// fork
 	//output = execv()
+	//Execute program (path,cmd,additionalarguments)
 	//std::cout < output <std::endl;
       }
       else
@@ -88,8 +94,7 @@ int main (int argc, char **argv)
 
 // Returns vector of strings created by splitting `text` on every occurance of `d`
 std::vector<std::string> splitString(std::string text, char d)
-{
-//NEED TO CODE
+{ //FINISHED
   std::string::iterator it;
   std::string path;
   std::vector<std::string> result;
@@ -110,14 +115,32 @@ std::vector<std::string> splitString(std::string text, char d)
 std::string getFullPath(std::string cmd, const std::vector<std::string>& os_path_list)
 {
 //THING TO DO
-    return "";
+  bool found = false;
+  bool executable = false;
+  std::string path;
+  std::vector<std::string>::const_iterator path_it = os_path_list.begin();
+  for(path_it = os_path_list.begin(); path_it != os_path_list.end() && !found; path_it++){
+    path = *path_it + '/' + cmd;
+    std::cout << path << std::endl;
+    found = fileExists(path,&executable);
+    if(found && executable){
+      return path;
+    }
+  }
+  return "";
+
 }
 
 // Returns whether a file exists or not; should also set *executable to true/false 
 // depending on if the user has permission to execute the file
 bool fileExists(std::string full_path, bool *executable)
 {
-//THING TO DO
+  if(1==0){
+    *executable = true;
+    return true;
+  }
+  else{
     *executable = false;
     return false;
+  }
 }
