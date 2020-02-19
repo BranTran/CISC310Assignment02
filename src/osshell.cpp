@@ -4,6 +4,7 @@
 #include <vector>
 #include <sys/stat.h>
 
+
 std::vector<std::string> splitString(std::string text, char d);
 std::string getFullPath(std::string cmd, const std::vector<std::string>& os_path_list);
 bool fileExists(std::string full_path, bool *executable);
@@ -11,12 +12,13 @@ bool fileExists(std::string full_path, bool *executable);
 int main (int argc, char **argv)
 {
 	//hello comment added
-    std::string input;
+    bool exit_flag = false;
     char* os_path = getenv("PATH");
-
-    //std::cout << os_path;//Print path variable
+    std::string cmd;
+    std::string input;
+    std::string full_path;
     std::vector<std::string> os_path_list = splitString(os_path, ':');//split path
-
+    std::vector<std::string> arguments;
     //--Displays pared PATH list
     //std::vector<std::string>::iterator path_it = os_path_list.begin();
     //    for(path_it = os_path_list.begin(); path_it != os_path_list.end(); path_it++){
@@ -35,22 +37,28 @@ int main (int argc, char **argv)
 
     //    bool* executable;
     //*executable = false;
-    bool exit_flag = false;
     //    std::string full_path ("");
     // Repeat:
     //  Print prompt for user input: "osshell> " (no newline)
     while(!(exit_flag))
     {
-      std::cout << "osshell>";
-
+      std::cout << "osshell> ";
     //  Get user input for next command
-      std::cin >> input;
-
-      //NEED TO PROCESS commandline to command and argument
+      std::getline(std::cin,input);
+      //      std::cout <<"Input: " << input<<std::endl;
+      arguments = splitString(input, ' ');
+      cmd = arguments.front();
       
+      //NEED TO PROCESS commandline to command and argument
+      if(cmd.compare("exit") == 0){
+	exit_flag = true;
+      }
 
       // If just \n next
 
+
+      else if(cmd.compare("history") == 0){
+	std::cout <<"Got a call for history. Need to implement it though" <<std::endl;
       //  else If command is `exit` exit loop / quit program
       /*
 	Add exit to history
@@ -64,31 +72,32 @@ int main (int argc, char **argv)
 	then play with history vector
 	add history into history
        */
-      
-
+      }
+      else{
     //  For all other commands, check if an executable by that name is in one of the PATH directories
-
+      
       //For each thing in path vector
       //
-      getFullPath(input, os_path_list);
-      //
-      //QUESTION: WHat is executable???
-      
-      //if(fileExists(full_path, executable))
-      if(1==0)
-      {
-	//   If yes, execute it
-	// fork
-	//output = execv()
-	//Execute program (path,cmd,additionalarguments)
-	//std::cout < output <std::endl;
-      }
-      else
-      {
-	std::cout<<"<Command_name>: Error running command"<<std::endl;
-	//   If no, print error statement: "<command_name>: Error running command" (do include newline)
-      }
-      exit_flag = true;
+	full_path = getFullPath(cmd, os_path_list);
+	//
+	//QUESTION: WHat is executable???
+	
+	//if(fileExists(full_path, executable))
+	if(!full_path.empty())
+	  {
+	    std::cout<<"We should execute "<<full_path<<std::endl;
+	    //   If yes, execute it
+	    // fork
+	    //output = execv()
+	    //Execute program (path,cmd,additionalarguments)
+	    //std::cout < output <std::endl;
+	  }
+	else
+	  {
+	    std::cout<<"<"<< cmd <<">: Error running command"<<std::endl;
+	    //   If no, print error statement: "<command_name>: Error running command" (do include newline)
+	  }
+      }//else not exit or history
     }//while exit_flag
     return 0;
 }
@@ -96,12 +105,12 @@ int main (int argc, char **argv)
 // Returns vector of strings created by splitting `text` on every occurance of `d`
 std::vector<std::string> splitString(std::string text, char d)
 { //FINISHED
-  std::string::iterator it;
   std::string path;
+  std::string::iterator it;
   std::vector<std::string> result;
+  
   for(it = text.begin(); it != text.end(); it++){
     if(*it == d){
-      //      std::cout << "Compared it:" <<*it<<" and found match"<<std::endl;
       result.push_back(path);
       path.clear();
     }
@@ -109,13 +118,15 @@ std::vector<std::string> splitString(std::string text, char d)
       path.push_back(*it);
     }
   }
-    return result;
+  //One last time
+  result.push_back(path);
+  return result;
 }
 
 // Returns a string for the full path of a command if it is found in PATH, otherwise simply return ""
 std::string getFullPath(std::string cmd, const std::vector<std::string>& os_path_list)
 {
-//THING TO DO
+//FINISHED
   bool found = false;
   bool executable = false;
   std::string path;
@@ -136,9 +147,10 @@ std::string getFullPath(std::string cmd, const std::vector<std::string>& os_path
 // Returns whether a file exists or not; should also set *executable to true/false 
 // depending on if the user has permission to execute the file
 bool fileExists(std::string full_path, bool *executable)
-{
+{//FINISHED
+  //Solution found using stack overflow
   struct stat st;
-  if(stat(file, &st) < 0){
+  if(stat(full_path.c_str(), &st) < 0){
     *executable = false;
     return false;
 
