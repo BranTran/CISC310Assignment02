@@ -1,13 +1,21 @@
+#include <string.h> //strcpy
+
+#include <unistd.h> //Execv
+#include <stdio.h>
 #include <iostream>
 #include <cstdlib>
 #include <string>
 #include <vector>
-#include <sys/stat.h>
 
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 
 std::vector<std::string> splitString(std::string text, char d);
 std::string getFullPath(std::string cmd, const std::vector<std::string>& os_path_list);
 bool fileExists(std::string full_path, bool *executable);
+char* const* convert(const std::vector< std::string > &v);
+
 
 int main (int argc, char **argv)
 {
@@ -19,6 +27,8 @@ int main (int argc, char **argv)
     std::string full_path;
     std::vector<std::string> os_path_list = splitString(os_path, ':');//split path
     std::vector<std::string> arguments;
+
+        
     //--Displays pared PATH list
     //std::vector<std::string>::iterator path_it = os_path_list.begin();
     //    for(path_it = os_path_list.begin(); path_it != os_path_list.end(); path_it++){
@@ -34,12 +44,7 @@ int main (int argc, char **argv)
       read file and store the LAST 128 (if applicable) into vector
       
      */
-
-    //    bool* executable;
-    //*executable = false;
-    //    std::string full_path ("");
-    // Repeat:
-    //  Print prompt for user input: "osshell> " (no newline)
+    
     while(!(exit_flag))
     {
       std::cout << "osshell> ";
@@ -48,9 +53,10 @@ int main (int argc, char **argv)
       //      std::cout <<"Input: " << input<<std::endl;
       arguments = splitString(input, ' ');
       cmd = arguments.front();
-      
+      if(input.empty()){
+      }
       //NEED TO PROCESS commandline to command and argument
-      if(cmd.compare("exit") == 0){
+      else if(cmd.compare("exit") == 0){
 	exit_flag = true;
       }
 
@@ -88,9 +94,34 @@ int main (int argc, char **argv)
 	    std::cout<<"We should execute "<<full_path<<std::endl;
 	    //   If yes, execute it
 	    // fork
-	    //output = execv()
+	    
+	    // std::vector<const char*> hope;
+
 	    //Execute program (path,cmd,additionalarguments)
 	    //std::cout < output <std::endl;
+
+
+	    pid_t child_pid;
+
+	    child_pid = fork();
+	    if(child_pid == 0) {
+	      /* This is done by the child process. */
+	      char* const* reading = convert(arguments);
+	      for(int i = 0; i < arguments.size(); i++){
+		printf("Argument [%d]: %s\n",i,reading[i]);
+	      }
+	      execv(full_path.c_str(),convert(arguments));
+	      /* If execv returns, it must have failed. */
+
+	      printf("Unknown command: %s\n",full_path.c_str());
+	      exit(0);
+	    }
+	    else {
+	      /* This is run by the parent.  Wait for the child
+		 to terminate. */
+	      wait(NULL);
+	    }
+	    
 	  }
 	else
 	  {
@@ -136,7 +167,7 @@ std::string getFullPath(std::string cmd, const std::vector<std::string>& os_path
     //    std::cout << path << std::endl;
     found = fileExists(path,&executable);
     if(found && executable){
-      std::cout << path << std::endl;
+      //std::cout << path << std::endl;
       return path;
     }
   }
@@ -162,4 +193,16 @@ bool fileExists(std::string full_path, bool *executable)
   *executable = false;
   return false;
 
+}
+char* const* convert(const std::vector< std::string > &v)
+{
+  char** cc = new char*[v.size()]; //if you make the pointers const here allready, you won't be able to fill them
+
+  for(unsigned int i = 0; i < v.size(); ++i)
+    {
+      cc[i] = new char[v[ i ].size()+1]; //make it fit
+      strcpy(cc[i], v[ i ].c_str());     //copy string
+    }
+
+  return cc; //pointers to the strings will be const to whoever receives this data.
 }
