@@ -51,6 +51,9 @@ int main (int argc, char **argv)
     //  Get user input for next command
       std::getline(std::cin,input);
       //      std::cout <<"Input: " << input<<std::endl;
+
+
+      
       arguments = splitString(input, ' ');
       cmd = arguments.front();
       if(input.empty()){
@@ -91,25 +94,19 @@ int main (int argc, char **argv)
 	//if(fileExists(full_path, executable))
 	if(!full_path.empty())
 	  {
-	    std::cout<<"We should execute "<<full_path<<std::endl;
-	    //   If yes, execute it
-	    // fork
-	    
-	    // std::vector<const char*> hope;
-
-	    //Execute program (path,cmd,additionalarguments)
-	    //std::cout < output <std::endl;
-
-
 	    pid_t child_pid;
-
 	    child_pid = fork();
+	    
 	    if(child_pid == 0) {
-	      /* This is done by the child process. */
+	      /* CHILD PROCESS */
 	      char* const* reading = convert(arguments);
-	      for(int i = 0; i < arguments.size(); i++){
-		printf("Argument [%d]: %s\n",i,reading[i]);
-	      }
+	      //for(int i = 0; i < arguments.size(); i++){
+	      //  printf("Argument [%d]: %s\n",i,reading[i]);
+	      //}char* test[]= something;
+	      char* testing[] = {"echo", "Hello There!", NULL};
+	      execv("bin/echo",testing);
+
+ 
 	      execv(full_path.c_str(),convert(arguments));
 	      /* If execv returns, it must have failed. */
 
@@ -117,8 +114,7 @@ int main (int argc, char **argv)
 	      exit(0);
 	    }
 	    else {
-	      /* This is run by the parent.  Wait for the child
-		 to terminate. */
+	      /* PARENT PROCESS */
 	      wait(NULL);
 	    }
 	    
@@ -194,6 +190,8 @@ bool fileExists(std::string full_path, bool *executable)
   return false;
 
 }
+
+
 char* const* convert(const std::vector< std::string > &v)
 {
   char** cc = new char*[v.size()]; //if you make the pointers const here allready, you won't be able to fill them
