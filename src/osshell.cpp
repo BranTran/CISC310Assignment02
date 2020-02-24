@@ -49,6 +49,10 @@ int main (int argc, char **argv)
       std::cout << "osshell> ";
       //  Get user input for next command
       std::getline(std::cin,input);
+
+
+
+      if(!input.empty()){
       // std::cout <<"Input: " << input<<std::endl;
       arguments = parsecmd(input);
       cmd = arguments.front();
@@ -59,10 +63,6 @@ int main (int argc, char **argv)
       for(arg_it = arguments.begin(); arg_it != arguments.end(); arg_it++){
 	//	std::cout << *arg_it << std::endl;
       }
-
-
-
-      if(!input.empty()){
 	  
 	if(cmd.compare("exit") == 0){
 	  exit_flag = true;
@@ -108,7 +108,7 @@ int main (int argc, char **argv)
 		/* If execv returns, it must have failed. */
 
 		printf("Error when executing %s: %s\n",full_path.c_str(),strerror(errno));
-		;
+		exit(3);
 	      }
 	      else
 		{
@@ -153,6 +153,7 @@ std::string getFullPath(std::string cmd, const std::vector<std::string>& os_path
 {
   //FINISHED
   bool found = false;
+  bool relative = false;
   bool executable = false;
   std::string path;
   std::vector<std::string>::const_iterator path_it = os_path_list.begin();
@@ -163,10 +164,17 @@ std::string getFullPath(std::string cmd, const std::vector<std::string>& os_path
       found = fileExists(path,&executable);
       if(found && executable)
         {
-	  //std::cout << path << std::endl;
+	  std::cout <<"Getting path: "<< path << std::endl;
 	  return path;
         }
     }
+  relative = fileExists(cmd,&executable);
+  if(relative && executable)
+    {
+      std::cout <<"Checking relative: "<< cmd << std::endl;
+      return cmd;
+    }
+  
   return "";
 
 }
@@ -241,9 +249,13 @@ std::vector<std::string> parsecmd(std::string cmd)
       path.push_back(*it);
     }
   }
+  
   //One last time
   if(path.size() > 0){
     result.push_back(path);
+  }
+  if(result.size() == 0){
+    result.push_back("");
   }
   return result;
 }
