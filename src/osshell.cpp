@@ -6,20 +6,22 @@
 #include <unistd.h> //Execv
 #include <string.h> //strcpy
 #include <fstream> //file IO
+#include <deque>
+
 
 #include <sys/stat.h> //file exists
 #include <sys/types.h> //pid
 #include <sys/wait.h> //wait()
 
 #define HISTORY_COUNT 128
-
+#define HISTORY_FILE "history.txt"
 std::vector<std::string> splitString(std::string text, char d);
 std::string getFullPath(std::string cmd, const std::vector<std::string>& os_path_list);
 bool fileExists(std::string full_path, bool *executable);
 char* const* convert(const std::vector< std::string > &v);
 std::vector<std::string> parsecmd(std::string cmd);
-std::vector<std::string> history(std::string hist[HISTORY_COUNT], int current, std::string input);
-std::vector<std::string> clear_history(std::vector<std::string> removeHistory);
+void history(std::deque<std::string> &hist, std::string option);
+void history(std::deque<std::string> &hist);
   
 int main (int argc, char **argv)
 {
@@ -27,6 +29,8 @@ int main (int argc, char **argv)
 	bool exit_flag = false;
 	char* os_path = getenv("PATH");
 	std::string cmd;
+	std::deque<std::string> hist;
+	
 	std::string input;
 	std::string full_path;
 	std::vector<std::string> os_path_list = splitString(os_path, ':');//split path
@@ -39,17 +43,27 @@ int main (int argc, char **argv)
 	//}
 	//std::cout << std::endl;
 
-	std::cout << "Welcome to OSShell! Please enter your commands ('exit' to quit)." << std::endl;
 	//Create in history data structure
-	std::string hist[HISTORY_COUNT];
-	int i = 0;
-	int current = 0;
-	for (i = 0; i < HISTORY_COUNT; i++)
+
+	//LOAD HISTORY
+	std::ifstream file(HISTORY_FILE);
+	//If the file exists
+	if(file.is_open())
 	{
-		hist[i] = "";
-	}//create empty array to hold history command
+	  std::string line;
+	  while(getline(file,line))
+	    {
+	      if(hist.size()==HISTORY_COUNT){
+		hist.pop_front();
+	      }
+	      hist.push_back(line);	     
+	    }
+	}
+	file.close();
 
 
+
+	std::cout << "Welcome to OSShell! Please enter your commands ('exit' to quit)." << std::endl;
 	while(!(exit_flag))
 	{
 		std::cout << "osshell> ";
@@ -60,9 +74,8 @@ int main (int argc, char **argv)
 
 		if(!input.empty()){
 			//Add input to our history
-			hist[current] = input;
-			current = (current+1) % HISTORY_COUNT;
-
+		  
+		
 			// std::cout <<"Input: " << input<<std::endl;
 			arguments = parsecmd(input);
 			cmd = arguments.front();
@@ -76,20 +89,23 @@ int main (int argc, char **argv)
 			   }//*/
 
 			if(cmd.compare("exit") == 0){
-				//Write out history to file
-				std::vector<std::string> finalList;
-				finalList = history(hist, current, "end");
+			  if(hist.size()==HISTORY_COUNT){
+			    hist.pop_front();
+			  }
+			  hist.push_back(input);	     
 
+				//Write out history to fill
 				std::ofstream myfile ("history.txt");
 				if (myfile.is_open())
 				{
 				  //				  std::cout<<"The history we are sending out is the following"<<std::endl;
-					for(int j = 0; j < finalList.size(); j++)
-					{
-					  //	  std::cout<<finalList.at(j)<<std::endl;
-					  myfile << finalList.at(j) << std::endl;
-					}
-					myfile.close();
+				  for(std::deque<std::string>::iterator it = hist.begin(); it != hist.end(); it++){
+				    if(*it != ""){
+				      myfile << *it << std::endl;
+				    }
+				  }
+				     
+				  myfile.close();
 				}
 
 				exit_flag = true;
@@ -100,7 +116,18 @@ int main (int argc, char **argv)
 
 			else if(cmd.compare("history") == 0){
 			  //std::cout <<"Got a call for history. Need to implement it though" <<std::endl;
-				history(hist,current,input);
+			  if(arguments.size() > 1)
+			    {
+			      history(hist,arguments[1]);
+			    }
+			  else{
+			    history(hist);
+			  }
+			  if(hist.size()==HISTORY_COUNT){
+			    hist.pop_front();
+			  }
+			  hist.push_back(input);	     
+
 			}
 			else{
 				//  For all other commands, check if an executable by that name is in one of the PATH directories
@@ -136,6 +163,11 @@ int main (int argc, char **argv)
 				{
 					std::cout << cmd <<": Error running command"<<std::endl;
 				}
+				if(hist.size()==HISTORY_COUNT){
+				  hist.pop_front();
+				}
+				hist.push_back(input);	     
+
 			}//else not exit or history
 		}//if input not empty
 	}//while exit_flag
@@ -269,50 +301,22 @@ std::vector<std::string> parsecmd(std::string cmd)
 	if(path.size() > 0){
 		result.push_back(path);
 	}
+	//If no commands came through
 	if(result.size() == 0){
 		result.push_back("");
 	}
 	return result;
 }
-
-std::vector<std::string> history(std::string hist[HISTORY_COUNT], int current, std::string input)
+/*
+std::vector<std::string> history(std::string hist[HISTORY_COUNT], int current, std::string option)
 {
         int i = 0;
 	int hist_num = 0;
 	int numberOfLines = 0;
 	std::vector<std::string> oldHistory;
 
-	//get all the old history
-	std::ifstream file("history.txt");
-
-
-	//If the file exists
-	if(file.is_open())
-	{
-	  std::string line;
-	  while(getline(file,line))
-	    {
-		oldHistory.push_back(line);
-		//std::cout<< line << std::endl;
-		numberOfLines++;
-		//std::cout << numberOfLines << " " << oldHistory.at(numberOfLines-1) << std::endl;
-	     
-	    }
-	}
-	file.close();
-
-	int overCount = 0;
-	//Erase the overCount;
-	if((current + oldHistory.size()) > 128)
-	{
-		//cout << "overload! \n";
-		overCount = ((current + oldHistory.size())-128);
-		//cout << overCount << "elements over, going to erase \n";
-		oldHistory.erase(oldHistory.begin(), oldHistory.begin() + overCount);
-	}
-
 	//
-	if(input != "end")
+	if(option != "end")
 	{
 	         //Print from file
 		for(int j = 0; j < oldHistory.size(); j++)
@@ -321,15 +325,7 @@ std::vector<std::string> history(std::string hist[HISTORY_COUNT], int current, s
 		}
 	}
 	//What is the size of the old history
-	hist_num = oldHistory.size();
-	if(hist_num == 0)
-	  {
-	    hist_num = 1;
-	  }
-	else
-	  {
-	    hist_num++;
-	  }
+	hist_num = oldHistory.size()+1;
 	
 	//print out of data structure
 	while(i<current-1)
@@ -353,19 +349,50 @@ std::vector<std::string> history(std::string hist[HISTORY_COUNT], int current, s
 	  }
 	
 	return oldHistory;
-}
+	}*/
 
-//*
-std::vector<std::string> clear_history(std::vector<std::string> removeHistory)
+//BRANTRAN EDITING
+void history(std::deque<std::string> &hist)
 {
-	removeHistory.clear();
-	/*
-	int i;
-	for (i = 0; i < HISTORY_COUNT; i++) 
-	{
-		free(hist[i]);
-		hist[i] = NULL;
+  history(hist,"");
+}
+void history(std::deque<std::string> &hist, std::string option)
+{
+  int index = 0;
+  int limit = 0;
+  int offset;
+  if(option == ""){
+    for(std::deque<std::string>::iterator it = hist.begin(); it != hist.end(); it++){
+      if(*it != ""){
+	std::cout << index + 1 << " " << *it << std::endl;
+	index++;
+      }
+    }
+  }
+  else if(option == "clear"){
+    hist.clear();
+    std::cout<<"clearing history"<<std::endl;
+  }
+  else{
+    std::cout<<"Option they are sending is: "<<option<<std::endl;
+    //They may be trying to send a number
+    std::string::size_type st;
+    limit = stoi(option,&st);
+
+    
+    std::cout<<"The limit is: "<<limit<<std::endl;
+    offset = hist.size()-limit;
+    std::cout<<"History size is: "<<hist.size()<<", offset: "<<offset<<std::endl;
+    //if successfully sent
+    
+    for(std::deque<std::string>::iterator it = hist.begin(); it != hist.end(); it++){
+      if(*it != ""){
+	if(offset <= 0){
+	  std::cout << index + 1 << " " << *it << std::endl;
 	}
-	//*/
-	return removeHistory;
-}//*/
+	offset--;
+	index++;
+      }//if 
+    }//for
+  }//else
+}//history

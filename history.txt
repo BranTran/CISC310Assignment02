@@ -1,5 +1,12 @@
-rm history.txt
-ls
+history clear
+history
+history 2
+history 10
+history
+exit
+history
+bad
+fun
 exit
 history
 exit
