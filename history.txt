@@ -1,0 +1,5 @@
+rm history.txt
+ls
+exit
+history
+exit

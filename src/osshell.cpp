@@ -83,10 +83,10 @@ int main (int argc, char **argv)
 				std::ofstream myfile ("history.txt");
 				if (myfile.is_open())
 				{
-				  std::cout<<"The history we are sending out is the following"<<std::endl;
+				  //				  std::cout<<"The history we are sending out is the following"<<std::endl;
 					for(int j = 0; j < finalList.size(); j++)
 					{
-					  std::cout<<finalList.at(j)<<std::endl;
+					  //	  std::cout<<finalList.at(j)<<std::endl;
 					  myfile << finalList.at(j) << std::endl;
 					}
 					myfile.close();
@@ -99,7 +99,7 @@ int main (int argc, char **argv)
 
 
 			else if(cmd.compare("history") == 0){
-				std::cout <<"Got a call for history. Need to implement it though" <<std::endl;
+			  //std::cout <<"Got a call for history. Need to implement it though" <<std::endl;
 				history(hist,current,input);
 			}
 			else{
@@ -134,7 +134,7 @@ int main (int argc, char **argv)
 				}
 				else
 				{
-					std::cout<<"<"<< cmd <<">: Error running command"<<std::endl;
+					std::cout << cmd <<": Error running command"<<std::endl;
 				}
 			}//else not exit or history
 		}//if input not empty
@@ -179,14 +179,14 @@ std::string getFullPath(std::string cmd, const std::vector<std::string>& os_path
 		found = fileExists(path,&executable);
 		if(found && executable)
 		{
-			std::cout <<"Getting path: "<< path << std::endl;
+		  //std::cout <<"Getting path: "<< path << std::endl;
 			return path;
 		}
 	}
 	relative = fileExists(cmd,&executable);
 	if(relative && executable)
 	{
-		std::cout <<"Checking relative: "<< cmd << std::endl;
+	  //std::cout <<"Checking relative: "<< cmd << std::endl;
 		return cmd;
 	}
 
@@ -290,19 +290,19 @@ std::vector<std::string> history(std::string hist[HISTORY_COUNT], int current, s
 	if(file.is_open())
 	{
 	  std::string line;
-	  while(!file.eof())
+	  while(getline(file,line))
 	    {
-	      getline(file,line);
-	      oldHistory.push_back(line);
-	      //cout<< line << endl;
-	      numberOfLines++;
-			//cout << numberOfLines << " " << oldHistory.at(numberOfLines-1) << "\n";
-		}
+		oldHistory.push_back(line);
+		//std::cout<< line << std::endl;
+		numberOfLines++;
+		//std::cout << numberOfLines << " " << oldHistory.at(numberOfLines-1) << std::endl;
+	     
+	    }
 	}
 	file.close();
 
 	int overCount = 0;
-	//if we are storing more than 128 between old and current history
+	//Erase the overCount;
 	if((current + oldHistory.size()) > 128)
 	{
 		//cout << "overload! \n";
@@ -314,46 +314,44 @@ std::vector<std::string> history(std::string hist[HISTORY_COUNT], int current, s
 	//
 	if(input != "end")
 	{
-	  //Print from file
+	         //Print from file
 		for(int j = 0; j < oldHistory.size(); j++)
 		{
 		  std::cout << j+1 << " " << oldHistory.at(j) << std::endl;
 		}
-
-		//What is the size of the old history
-		hist_num = oldHistory.size();
-		if(hist_num == 0)
-		  {
-		    hist_num = 1;
-		  }
-		else
-		  {
-		    hist_num++;
-		  }
-		
-		//print out of data structure
-		while(i<current-1)
-		  {
-		    oldHistory.push_back(hist[i]);
-		    if(input == "end")
-		      {
-			//do not print history
-			i++;
-		      }
-		    else
-		      {
-			//Add our history to the old history
-			oldHistory.push_back(hist[i]);
-			std::cout << i+hist_num << " " << hist[i] << std::endl;
-			i++;
-		      }
-		  }//while
 	}
+	//What is the size of the old history
+	hist_num = oldHistory.size();
+	if(hist_num == 0)
+	  {
+	    hist_num = 1;
+	  }
+	else
+	  {
+	    hist_num++;
+	  }
+	
+	//print out of data structure
+	while(i<current-1)
+	  {
+	    oldHistory.push_back(hist[i]);
+	    if(input == "end")
+	      {
+		//do not print history
+		i++;
+	      }
+	    else
+	      {
+		//Add our history to the old history
+		std::cout << i+hist_num << " " << hist[i] << std::endl;
+		i++;
+	      }
+	  }//while
 	if(input == "end")
-	{
-		oldHistory.push_back("exit");
-	}
-
+	  {
+	    oldHistory.push_back("exit");
+	  }
+	
 	return oldHistory;
 }
 
